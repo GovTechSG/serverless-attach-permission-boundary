@@ -22,5 +22,5 @@ plugins:
 ```yaml
 provider:
   name: aws
-  permissionBoundaryArn: 'arn:aws:iam::789763425617:policy/ABCAccountBoundary'
+  permissionsBoundaryArn: 'arn:aws:iam::789763425617:policy/ABCAccountBoundary'
 ```

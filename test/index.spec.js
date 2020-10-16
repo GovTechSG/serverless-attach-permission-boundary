@@ -35,10 +35,10 @@ const theTestLog = testConsole()
 const checkLog = messages => theTestLog.check(messages)
 
 const serverlessStub =
-  (permissionBoundary, resources) => ({
+  (permissionsBoundary, resources) => ({
     service: {
       provider: {
-        permissionBoundary,
+        permissionsBoundary,
         compiledCloudFormationTemplate: {
           Resources: resources,
         },
@@ -98,23 +98,23 @@ describe('Attach Permission Boundary Serverless Plugin', () => {
     expect(thePlugin.hooks).to.have.all.keys(['before:deploy:deploy'])
   })
 
-  it('doesn\'t do anything if neither permissionBoundary nor CFT resources are included', () => {
+  it('doesn\'t do anything if neither permissionsBoundary nor CFT resources are included', () => {
     const slsStub = serverlessStub(null, null)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
     checkLog([])
   })
 
-  it('doesn\'t do anything if no permissionBoundary is included', () => {
+  it('doesn\'t do anything if no permissionsBoundary is included', () => {
     const resources = clone(testResources0)
     const slsStub = serverlessStub(null, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
-    expect(resources.MyRole.Properties).not.to.have.keys(['PermissionBoundary'])
+    expect(resources.MyRole.Properties).not.to.have.keys(['PermissionsBoundary'])
     checkLog([])
   })
 
@@ -122,7 +122,7 @@ describe('Attach Permission Boundary Serverless Plugin', () => {
     const slsStub = serverlessStub(testPolicyArn0, null)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
     expect(theTestLog.result().length).to.equal(0)
   })
@@ -132,20 +132,20 @@ describe('Attach Permission Boundary Serverless Plugin', () => {
     const slsStub = serverlessStub('not-valid-policy-ARN', resources)
     const thePlugin = new Plugin(slsStub)
 
-    expect(thePlugin.attachPermissionBoundary.bind(thePlugin))
+    expect(thePlugin.attachPermissionsBoundary.bind(thePlugin))
       .to.throw('"not-valid-policy-ARN" is not a valid policy ARN.')
   })
 
   it('does not add a duplicate policy', () => {
     const resources = clone(testResources0)
-    resources.MyRole.Properties.PermissionBoundary = testPolicyArn0
+    resources.MyRole.Properties.PermissionsBoundary = testPolicyArn0
     const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
     expect(resources.MyRole).to.have.keys(['Type', 'Properties'])
-    expect(resources.MyRole.Properties.PermissionBoundary).to.equal(testPolicyArn0)
+    expect(resources.MyRole.Properties.PermissionsBoundary).to.equal(testPolicyArn0)
 
     checkLog([
       'Begin Attach Permission Boundary plugin...',
@@ -158,9 +158,9 @@ describe('Attach Permission Boundary Serverless Plugin', () => {
     const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
-    expect(resources.MyRole.Properties.PermissionBoundary).to.equal(testPolicyArn0)
+    expect(resources.MyRole.Properties.PermissionsBoundary).to.equal(testPolicyArn0)
 
     checkLog([
       'Begin Attach Permission Boundary plugin...',
@@ -173,13 +173,13 @@ describe('Attach Permission Boundary Serverless Plugin', () => {
     const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachPermissionBoundary()
+    thePlugin.attachPermissionsBoundary()
 
-    expect(resources.MyRole0.Properties.PermissionBoundary).to.equal(testPolicyArn0)
+    expect(resources.MyRole0.Properties.PermissionsBoundary).to.equal(testPolicyArn0)
 
-    expect(resources.MyRole1.Properties.PermissionBoundary).to.equal(testPolicyArn0)
+    expect(resources.MyRole1.Properties.PermissionsBoundary).to.equal(testPolicyArn0)
 
-    expect(resources.MyRole2.Properties.PermissionBoundary).to.equal(testPolicyArn0)
+    expect(resources.MyRole2.Properties.PermissionsBoundary).to.equal(testPolicyArn0)
 
     checkLog([
       'Begin Attach Permission Boundary plugin...',
