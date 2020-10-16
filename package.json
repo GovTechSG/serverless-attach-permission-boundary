@@ -1,7 +1,7 @@
 {
-  "name": "serverless-attach-managed-policy",
-  "version": "0.0.6",
-  "description": "A serverless plugin to automatically attach an AWS Managed IAM Policy (or Policies) to all IAM Roles created by the Service.",
+  "name": "@govtechsg/serverless-attach-permission-boundary",
+  "version": "0.0.1",
+  "description": "A serverless plugin to automatically attach an AWS Permission Boundary to all IAM Roles created by the Service.",
   "main": "lib/index.js",
   "directories": {
     "test": "test"
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Nordstrom/serverless-attach-managed-policy.git"
+    "url": "git+https://github.com/GovTechSG/serverless-attach-permission-boundary.git"
   },
   "keywords": [
     "serverless",
@@ -21,14 +21,15 @@
     "AWS",
     "managed",
     "policy",
-    "roles"
+    "roles",
+    "permission boundary"
   ],
-  "author": "Nordstrom Technology",
+  "author": "RJChow",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Nordstrom/serverless-attach-managed-policy/issues"
+    "url": "https://github.com/GovTechSG/serverless-attach-permission-boundary/issues"
   },
-  "homepage": "https://github.com/Nordstrom/serverless-attach-managed-policy#readme",
+  "homepage": "https://github.com/GovTechSG/serverless-attach-permission-boundary#readme",
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.11.0",

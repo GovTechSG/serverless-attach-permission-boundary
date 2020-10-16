@@ -35,10 +35,10 @@ const theTestLog = testConsole()
 const checkLog = messages => theTestLog.check(messages)
 
 const serverlessStub =
-  (policyArns, resources) => ({
+  (permissionBoundary, resources) => ({
     service: {
       provider: {
-        managedPolicyArns: policyArns,
+        permissionBoundary,
         compiledCloudFormationTemplate: {
           Resources: resources,
         },
@@ -78,10 +78,9 @@ const testResources1 =
     },
   }
 
-const testPolicyArn0 = 'arn:aws:iam::789763425617:policy/someteam/MyManagedPolicy-3QUG1777293EJ'
-const testPolicyArn1 = 'arn:aws:iam::789763425617:policy/someteam/AnotherManagedPolicy-F6NZ1321293EJ'
+const testPolicyArn0 = 'arn:aws:iam::789763425617:policy/ABCAccountBoundary'
 
-describe('Attach Managed Policy Serverless Plugin', () => {
+describe('Attach Permission Boundary Serverless Plugin', () => {
   beforeEach(() => { theTestLog.start() })
   afterEach(() => { theTestLog.end() })
 
@@ -99,148 +98,92 @@ describe('Attach Managed Policy Serverless Plugin', () => {
     expect(thePlugin.hooks).to.have.all.keys(['before:deploy:deploy'])
   })
 
-  it('doesn\'t do anything if neither managedPolicyArns nor CFT resources are included', () => {
+  it('doesn\'t do anything if neither permissionBoundary nor CFT resources are included', () => {
     const slsStub = serverlessStub(null, null)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
     checkLog([])
   })
 
-  it('doesn\'t do anything if no managedPolicyArns are included', () => {
+  it('doesn\'t do anything if no permissionBoundary is included', () => {
     const resources = clone(testResources0)
     const slsStub = serverlessStub(null, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
-    expect(resources.MyRole.Properties).not.to.have.keys(['ManagedPolicyArns'])
+    expect(resources.MyRole.Properties).not.to.have.keys(['PermissionBoundary'])
     checkLog([])
   })
 
   it('doesn\'t do anything if no CFT resources are provided', () => {
-    const slsStub = serverlessStub([testPolicyArn0], null)
+    const slsStub = serverlessStub(testPolicyArn0, null)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
     expect(theTestLog.result().length).to.equal(0)
   })
 
-  it('looks for roles if managedPolicyArns and resources are present', () => {
-    const slsStub = serverlessStub([], [])
-    const thePlugin = new Plugin(slsStub)
-
-    thePlugin.attachManagedPolicy()
-
-    checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
-    ])
-  })
-
   it('throws if an invalid looking policy ARN is provided', () => {
     const resources = clone(testResources0)
-    const slsStub = serverlessStub(['not-valid-policy-ARN'], resources)
+    const slsStub = serverlessStub('not-valid-policy-ARN', resources)
     const thePlugin = new Plugin(slsStub)
 
-    expect(thePlugin.attachManagedPolicy.bind(thePlugin))
+    expect(thePlugin.attachPermissionBoundary.bind(thePlugin))
       .to.throw('"not-valid-policy-ARN" is not a valid policy ARN.')
   })
 
   it('does not add a duplicate policy', () => {
     const resources = clone(testResources0)
-    resources.MyRole.Properties.ManagedPolicyArns = [testPolicyArn0]
-    const slsStub = serverlessStub([testPolicyArn0], resources)
+    resources.MyRole.Properties.PermissionBoundary = testPolicyArn0
+    const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
     expect(resources.MyRole).to.have.keys(['Type', 'Properties'])
-    expect(resources.MyRole.Properties.ManagedPolicyArns.length).to.equal(1)
-    expect(resources.MyRole.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
+    expect(resources.MyRole.Properties.PermissionBoundary).to.equal(testPolicyArn0)
 
     checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
+      'Begin Attach Permission Boundary plugin...',
+      'Attach Permission Boundary plugin done.',
     ])
   })
 
   it('can add a policy where none exist', () => {
     const resources = clone(testResources0)
-    const slsStub = serverlessStub([testPolicyArn0], resources)
-    const thePlugin = new Plugin(slsStub)
-
-    thePlugin.attachManagedPolicy()
-
-    expect(resources.MyRole.Properties.ManagedPolicyArns.length).to.equal(1)
-    expect(resources.MyRole.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
-
-    checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
-    ])
-  })
-
-  it('supports providing a string as a single ManagedPolicyARN', () => {
-    const resources = clone(testResources0)
     const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
-    expect(resources.MyRole.Properties.ManagedPolicyArns.length).to.equal(1)
-    expect(resources.MyRole.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
+    expect(resources.MyRole.Properties.PermissionBoundary).to.equal(testPolicyArn0)
 
     checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
+      'Begin Attach Permission Boundary plugin...',
+      'Attach Permission Boundary plugin done.',
     ])
   })
 
-  it('can add an additional policy to a role', () => {
-    const resources = clone(testResources0)
-    resources.MyRole.Properties.ManagedPolicyArns = [testPolicyArn0]
-    const slsStub = serverlessStub([testPolicyArn1], resources)
-    const thePlugin = new Plugin(slsStub)
-
-    thePlugin.attachManagedPolicy()
-
-    expect(resources.MyRole.Properties.ManagedPolicyArns.length).to.equal(2)
-    expect(resources.MyRole.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn1)
-    expect(resources.MyRole.Properties.ManagedPolicyArns[1]).to.equal(testPolicyArn0)
-
-    checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
-    ])
-  })
-
-  it('can add multiple policies to roles as needed', () => {
+  it('can add permission boundaries to multiple roles', () => {
     const resources = clone(testResources1)
-    resources.MyRole0.Properties.ManagedPolicyArns = [testPolicyArn0]
-    resources.MyRole1.Properties.ManagedPolicyArns = [testPolicyArn1]
-    const slsStub = serverlessStub([testPolicyArn0, testPolicyArn1], resources)
+    const slsStub = serverlessStub(testPolicyArn0, resources)
     const thePlugin = new Plugin(slsStub)
 
-    thePlugin.attachManagedPolicy()
+    thePlugin.attachPermissionBoundary()
 
-    expect(resources.MyRole0.Properties.ManagedPolicyArns.length).to.equal(2)
-    expect(resources.MyRole0.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
-    expect(resources.MyRole0.Properties.ManagedPolicyArns[1]).to.equal(testPolicyArn1)
+    expect(resources.MyRole0.Properties.PermissionBoundary).to.equal(testPolicyArn0)
 
-    expect(resources.MyRole1.Properties.ManagedPolicyArns.length).to.equal(2)
-    expect(resources.MyRole1.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
-    expect(resources.MyRole1.Properties.ManagedPolicyArns[1]).to.equal(testPolicyArn1)
+    expect(resources.MyRole1.Properties.PermissionBoundary).to.equal(testPolicyArn0)
 
-    expect(resources.MyRole2.Properties.ManagedPolicyArns.length).to.equal(2)
-    expect(resources.MyRole2.Properties.ManagedPolicyArns[0]).to.equal(testPolicyArn0)
-    expect(resources.MyRole2.Properties.ManagedPolicyArns[1]).to.equal(testPolicyArn1)
+    expect(resources.MyRole2.Properties.PermissionBoundary).to.equal(testPolicyArn0)
 
     checkLog([
-      'Begin Attach Managed Policies plugin...',
-      'Attach Managed Policies plugin done.',
+      'Begin Attach Permission Boundary plugin...',
+      'Attach Permission Boundary plugin done.',
     ])
   })
 })
