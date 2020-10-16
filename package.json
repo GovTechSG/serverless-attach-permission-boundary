@@ -1,6 +1,6 @@
 {
-  "name": "@govtechsg/serverless-attach-permission-boundary",
-  "version": "0.0.1",
+  "name": "serverless-attach-permission-boundary",
+  "version": "0.0.5",
   "description": "A serverless plugin to automatically attach an AWS Permission Boundary to all IAM Roles created by the Service.",
   "main": "lib/index.js",
   "directories": {
